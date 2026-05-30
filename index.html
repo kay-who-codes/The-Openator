@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IceBreak</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #131313;
+      --surface: #1c1c1c;
+      --surface-2: #242424;
+      --border: #2e2e2e;
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --accent: #ff7cfd;
+      --accent-2: #ff4081;
+      --glow: rgba(255, 124, 253, 0.18);
+      --glow-2: rgba(255, 64, 129, 0.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 16px 60px;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background blobs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,124,253,0.07) 0%, transparent 70%);
+      top: -150px; right: -150px;
+    }
+    body::after {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(255,64,129,0.06) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 720px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      text-align: center;
+      padding: 52px 0 36px;
+    }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 16px 6px 10px;
+      margin-bottom: 24px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .logo-badge span.dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 7vw, 4rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* ── OUTPUT CARD ── */
+    .output-card {
+      background: linear-gradient(145deg, var(--surface) 0%, #1a1a1a 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .output-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--glow) 0%, var(--glow-2) 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      border-radius: inherit;
+    }
+
+    .output-card.active::before { opacity: 1; }
+    .output-card.active {
+      border-color: rgba(255,124,253,0.35);
+      box-shadow: 0 0 40px rgba(255,124,253,0.1);
+    }
+
+    .output-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      position: relative;
+    }
+
+    .opener-text {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+      line-height: 1.5;
+      color: var(--text);
+      min-height: 2.5em;
+      position: relative;
+    }
+
+    .opener-text .part {
+      display: inline;
+      transition: color 0.3s ease;
+    }
+    .opener-text .part-intro { color: var(--accent); }
+    .opener-text .part-opener { color: #f0f0f0; }
+    .opener-text .part-followup { color: #c8c8c8; }
+
+    .opener-placeholder {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 1rem;
+      font-family: var(--font-body);
+    }
+
+    /* Parts breakdown */
+    .parts-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    .part-chip {
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      border: 1px solid transparent;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    .output-card.active .part-chip { opacity: 1; }
+    .chip-intro {
+      background: rgba(255,124,253,0.12);
+      border-color: rgba(255,124,253,0.3);
+      color: var(--accent);
+    }
+    .chip-opener {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.12);
+      color: #ccc;
+    }
+    .chip-followup {
+      background: rgba(255,64,129,0.08);
+      border-color: rgba(255,64,129,0.25);
+      color: #ff9ab8;
+    }
+
+    /* ── CONTROLS ── */
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+
+    .btn-generate {
+      flex: 1;
+      min-width: 180px;
+      min-height: 56px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      letter-spacing: 0.02em;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      box-shadow: 0 4px 24px rgba(255, 124, 253, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-generate::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-generate:hover::after { opacity: 1; }
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(255, 124, 253, 0.4);
+    }
+    .btn-generate:active {
+      transform: translateY(0);
+      filter: brightness(0.92);
+    }
+
+    .btn-copy {
+      min-height: 56px;
+      min-width: 56px;
+      background: var(--surface);
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 20px;
+      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .btn-copy:hover {
+      background: var(--surface-2);
+      color: var(--text);
+      border-color: rgba(255,124,253,0.3);
+      transform: translateY(-1px);
+    }
+    .btn-copy.copied {
+      color: var(--accent);
+      border-color: rgba(255,124,253,0.4);
+    }
+
+    /* ── POOLS SECTION ── */
+    .pools-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .pools-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .toggle-pools {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 32px;
+    }
+    .toggle-pools:hover {
+      border-color: rgba(255,124,253,0.35);
+      color: var(--accent);
+    }
+
+    .pools-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      overflow: hidden;
+      max-height: 2000px;
+      transition: max-height 0.5s ease, opacity 0.3s ease;
+      opacity: 1;
+    }
+    .pools-grid.collapsed {
+      max-height: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (min-width: 600px) {
+      .pools-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+
+    .pool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .pool-card:focus-within {
+      border-color: rgba(255,124,253,0.4);
+    }
+
+    .pool-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .pool-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-intro { background: var(--accent); }
+    .dot-opener { background: #ddd; }
+    .dot-followup { background: var(--accent-2); }
+
+    .pool-card-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .pool-items {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .pool-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pool-item input[type="text"] {
+      flex: 1;
+      background: var(--surface-2);
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      min-height: 38px;
+    }
+    .pool-item input[type="text"]:focus {
+      border-color: rgba(255,124,253,0.4);
+      background: #1f1f1f;
+    }
+    .pool-item input[type="text"]::placeholder { color: #555; }
+
+    .btn-remove {
+      width: 28px; height: 28px;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: #444;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .btn-remove:hover { background: rgba(255,64,129,0.12); border-color: rgba(255,64,129,0.3); color: var(--accent-2); }
+
+    .btn-add {
+      width: 100%;
+      min-height: 34px;
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 7px;
+      color: #555;
+      font-family: var(--font-body);
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .btn-add:hover { border-color: rgba(255,124,253,0.4); color: var(--accent); }
+
+    /* ── HISTORY ── */
+    .history-section { margin-top: 40px; }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .history-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .btn-clear-history {
+      background: none;
+      border: none;
+      color: #444;
+      font-family: var(--font-body);
+      font-size: 12px;
+      cursor: pointer;
+      transition: color 0.2s;
+      min-height: 32px;
+      padding: 0 8px;
+    }
+    .btn-clear-history:hover { color: var(--accent-2); }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .history-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      font-style: italic;
+      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .history-item:hover {
+      border-color: rgba(255,124,253,0.25);
+      color: var(--text);
+    }
+
+    .empty-history {
+      color: #333;
+      font-size: 13px;
+      text-align: center;
+      padding: 24px 0;
+      border: 1px dashed #222;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── ICON SVGs inline ── */
+    .icon { display: inline-block; vertical-align: middle; }
+
+    /* ── SHIMMER animation on generate ── */
+    @keyframes shimmer {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+    .generating { animation: shimmer 0.4s ease 2; }
+
+    /* ── Spin dice icon ── */
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .spinning { animation: spin 0.4s ease; }
+
+    /* Footer */
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      color: #333;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+
+      <h1>IceBreak.</h1>
+      <p class="subtitle">Generate charming conversation openers — randomised from your own word pools.</p>
+    </header>
+
+    <!-- Output -->
+    <div class="output-card" id="outputCard">
+      <div class="output-label">Your opener</div>
+      <div class="opener-text" id="openerText">
+        <span class="opener-placeholder">Hit generate to craft your opener…</span>
+      </div>
+      <div class="parts-row" id="partsRow" style="display:none;">
+        <span class="part-chip chip-intro" id="chipIntro"></span>
+        <span class="part-chip chip-opener" id="chipOpener"></span>
+        <span class="part-chip chip-followup" id="chipFollowup"></span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn-generate" id="btnGenerate" onclick="generate()">
+        <svg class="icon" id="diceIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="4"/>
+          <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+        Generate Opener
+      </button>
+      <button class="btn-copy" id="btnCopy" onclick="copyOpener()" title="Copy to clipboard">
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copy
+      </button>
+    </div>
+
+    <!-- Word Pools -->
+    <div class="pools-header">
+      <div class="pools-title">Word Pools</div>
+      <button class="toggle-pools" id="togglePools" onclick="togglePools()">Hide ↑</button>
+    </div>
+
+    <div class="pools-grid" id="poolsGrid">
+      <!-- Intro Pool -->
+      <div class="pool-card">
+        <div class="pool-card-header">
+          <span class="pool-dot dot-intro"></span>
+          <span class="pool-card-title">Introduction</span>
+        </div>
+        <div class="pool-items" id="introPool"></div>
+        <button class="btn-add" onclick="addItem('intro')">+ Add</button>
+      </div>
+      <!-- Opener Pool -->
+      <div class="pool-card">
+        <div class="pool-card-header">
+          <span class="pool-dot dot-opener"></span>
+          <span class="pool-card-title">Opener</span>
+        </div>
+        <div class="pool-items" id="openerPool"></div>
+        <button class="btn-add" onclick="addItem('opener')">+ Add</button>
+      </div>
+      <!-- Followup Pool -->
+      <div class="pool-card">
+        <div class="pool-card-header">
+          <span class="pool-dot dot-followup"></span>
+          <span class="pool-card-title">Follow-up</span>
+        </div>
+        <div class="pool-items" id="followupPool"></div>
+        <button class="btn-add" onclick="addItem('followup')">+ Add</button>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="history-section">
+      <div class="history-header">
+        <div class="history-title">Recent openers</div>
+        <button class="btn-clear-history" onclick="clearHistory()">Clear all</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-history">No openers generated yet.</div>
+      </div>
+    </div>
+
+    <footer>made with charm &amp; randomness</footer>
+  </div>
+
+  <script>
+    // ── Default pools ──
+    const defaultPools = {
+      intro: [
+        'Hey, ',
+        'Excuse me, ',
+        'Hi there! ',
+        'Oh, sorry — ',
+        'Pardon me, ',
+        'Hi! ',
+        'Hello! ',
+        'Hey, wait — ',
+        'Oh hi, ',
+        'Wow, okay — ',
+        'Alright, ',
+        'So, ',
+        'Right, um — ',
+        'Look, ',
+        'Okay, ',
+        'Listen, ',
+        'Oh my god, ',
+        'Wait, ',
+        'Sorry to interrupt, but ',
+        'Not to be weird, but ',
+        'Random, I know, but ',
+        'Totally out of nowhere, but ',
+        'I\'ll keep this brief — ',
+        'Don\'t mind me, but ',
+        'This is a bit spontaneous, but ',
+      ],
+      opener: [
+        'I saw that you were here',
+        'I just wanted to introduce myself',
+        'I noticed you from across the room',
+        'you seem really interesting',
+        'I couldn\'t help but notice you',
+        'this might be a little forward, but',
+        'I had to come over and say hi',
+        'you have an incredible presence',
+        'I\'ve been working up the nerve to talk to you',
+        'you look like someone worth knowing',
+        'I keep running into you and figured I should say something',
+        'I spotted you and lost track of my entire train of thought',
+        'you\'re giving off really great vibes',
+        'I think we\'ve been making eye contact for like five minutes',
+        'I almost didn\'t come over, but something told me to',
+        'I\'ve never done this before, but here we are',
+        'I was on my way out and then I saw you',
+        'you look like you\'re having the most interesting time here',
+        'my friend bet me I wouldn\'t talk to you — they were wrong',
+        'I think the universe is nudging me to introduce myself',
+        'you look familiar — do I know you from somewhere?',
+        'I\'m supposed to be leaving, but I saw you and reconsidered',
+        'I noticed you laughing from across the room and it was contagious',
+        'you have the most distinctive style here',
+        'I overheard something you said and I completely agree',
+        'you looked like you could use a conversation',
+        'I\'ve been standing here debating this for way too long',
+        'I told myself if you were still here in five minutes I\'d come over',
+        'I don\'t usually do this kind of thing',
+        'you caught my eye and now here I am',
+        'something about you is very intriguing',
+        'I\'ve walked past twice and I just had to stop',
+        'I was minding my own business and then I saw you',
+        'you seem like exactly the kind of person I\'d want to meet',
+      ],
+      followup: [
+        'I\'m [name] — what\'s yours?',
+        'Are you a snob?',
+        'Can I buy you a coffee?',
+        'we should talk more.',
+        'do you come here often?',
+        'you have a great energy.',
+        'what\'s your story?',
+        'I\'m [name], by the way.',
+        'can I join you for a minute?',
+        'what are you drinking?',
+        'are you here alone or with people?',
+        'what brings you here tonight?',
+        'you look like you have good taste.',
+        'tell me something interesting about yourself.',
+        'I\'m glad I came over.',
+        'okay, now I\'m nervous — hi.',
+        'please don\'t make this weird.',
+        'am I being too much?',
+        'is this seat taken?',
+        'can I get your name at least?',
+        'I promise I\'m normal.',
+        'don\'t leave yet.',
+        'you look like a good conversationalist.',
+        'what do you do when you\'re not being noticed across rooms?',
+        'I owe my friend five dollars for doing this.',
+        'how\'s your evening going?',
+        'where are you from originally?',
+        'I hope that wasn\'t too strange.',
+        'you seem like someone who\'s interesting to talk to.',
+        'can I steal two minutes of your time?',
+        'any chance you\'re single?',
+        'I\'ll stop rambling now.',
+        'that\'s my opener — now you go.',
+        'so… hi.',
+      ],
+    };
+
+    let pools = JSON.parse(JSON.stringify(defaultPools)); // deep copy
+    let history = [];
+    let currentOpener = null;
+    let poolsVisible = true;
+
+    // ── Render pool inputs ──
+    function renderPool(type) {
+      const el = document.getElementById(type + 'Pool');
+      el.innerHTML = '';
+      pools[type].forEach((val, i) => {
+        const row = document.createElement('div');
+        row.className = 'pool-item';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = val;
+        input.placeholder = 'Type a phrase…';
+        input.addEventListener('input', () => { pools[type][i] = input.value; });
+        const btn = document.createElement('button');
+        btn.className = 'btn-remove';
+        btn.title = 'Remove';
+        btn.innerHTML = '×';
+        btn.addEventListener('click', () => { pools[type].splice(i, 1); renderPool(type); });
+        row.appendChild(input);
+        row.appendChild(btn);
+        el.appendChild(row);
+      });
+    }
+
+    function addItem(type) {
+      pools[type].push('');
+      renderPool(type);
+      // focus the new input
+      const items = document.querySelectorAll('#' + type + 'Pool .pool-item input');
+      if (items.length) items[items.length - 1].focus();
+    }
+
+    function togglePools() {
+      poolsVisible = !poolsVisible;
+      const grid = document.getElementById('poolsGrid');
+      const btn = document.getElementById('togglePools');
+      grid.classList.toggle('collapsed', !poolsVisible);
+      btn.textContent = poolsVisible ? 'Hide ↑' : 'Show ↓';
+    }
+
+    // ── Generate ──
+    function pick(arr) {
+      const clean = arr.filter(s => s.trim().length > 0);
+      if (!clean.length) return null;
+      return clean[Math.floor(Math.random() * clean.length)];
+    }
+
+    function generate() {
+      const intro = pick(pools.intro);
+      const opener = pick(pools.opener);
+      const followup = pick(pools.followup);
+
+      if (!intro || !opener || !followup) {
+        alert('Please make sure each pool has at least one phrase!');
+        return;
+      }
+
+      const sentence = intro + opener + ' — ' + followup;
+      currentOpener = { intro, opener, followup, full: sentence };
+
+      // Animate dice icon
+      const dice = document.getElementById('diceIcon');
+      dice.classList.remove('spinning');
+      void dice.offsetWidth;
+      dice.classList.add('spinning');
+      setTimeout(() => dice.classList.remove('spinning'), 400);
+
+      // Update output
+      const card = document.getElementById('outputCard');
+      const textEl = document.getElementById('openerText');
+      const partsRow = document.getElementById('partsRow');
+
+      textEl.classList.add('generating');
+      setTimeout(() => textEl.classList.remove('generating'), 400);
+
+      textEl.innerHTML =
+        `<span class="part part-intro">${escHtml(intro)}</span>` +
+        `<span class="part part-opener">${escHtml(opener)}</span>` +
+        ` — <span class="part part-followup">${escHtml(followup)}</span>`;
+
+      document.getElementById('chipIntro').textContent = 'Intro: ' + intro.trim();
+      document.getElementById('chipOpener').textContent = 'Opener: ' + opener;
+      document.getElementById('chipFollowup').textContent = 'Follow-up: ' + followup;
+      partsRow.style.display = 'flex';
+      card.classList.add('active');
+
+      // History
+      addToHistory(sentence);
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Copy ──
+    function copyOpener() {
+      if (!currentOpener) return;
+      navigator.clipboard.writeText(currentOpener.full).then(() => {
+        const btn = document.getElementById('btnCopy');
+        btn.classList.add('copied');
+        btn.innerHTML = `<svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = `<svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+        }, 2000);
+      });
+    }
+
+    // ── History ──
+    function addToHistory(text) {
+      history.unshift(text);
+      if (history.length > 10) history.pop();
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const el = document.getElementById('historyList');
+      if (!history.length) {
+        el.innerHTML = '<div class="empty-history">No openers generated yet.</div>';
+        return;
+      }
+      el.innerHTML = '';
+      history.forEach(text => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.textContent = text;
+        item.title = 'Click to copy';
+        item.addEventListener('click', () => {
+          navigator.clipboard.writeText(text);
+          item.style.borderColor = 'rgba(255,124,253,0.5)';
+          item.style.color = 'var(--text)';
+          setTimeout(() => { item.style.borderColor = ''; item.style.color = ''; }, 1000);
+        });
+        el.appendChild(item);
+      });
+    }
+
+    function clearHistory() {
+      history = [];
+      renderHistory();
+    }
+
+    // ── Keyboard shortcut: Space to generate ──
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+        e.preventDefault();
+        generate();
+      }
+    });
+
+    // ── Init ──
+    renderPool('intro');
+    renderPool('opener');
+    renderPool('followup');
+    renderHistory();
+  </script>
+</body>
+</html>
