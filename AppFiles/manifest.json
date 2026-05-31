@@ -1,0 +1,19 @@
+{
+  "name": "Play Game",
+  "short_name": "Game",
+  "start_url": "/",
+  "display": "standalone",
+  "author": "Kay",
+  "icons": [
+  {
+    "src": "Icons/Game Logo - 192px.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  },
+  {
+    "src": "Icons/Game Logo - 512px.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }
+]
+}
