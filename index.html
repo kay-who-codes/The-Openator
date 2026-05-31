@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IceBreak</title>
+  <title>💬 Openator</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -551,22 +551,9 @@
   <div class="wrapper">
     <header>
 
-      <h1>IceBreak.</h1>
-      <p class="subtitle">Generate charming conversation openers — randomised from your own word pools.</p>
+      <h1>IceBreak Openator</h1>
+      <p class="subtitle">Generate randomised conversation openers.</p>
     </header>
-
-    <!-- Output -->
-    <div class="output-card" id="outputCard">
-      <div class="output-label">Your opener</div>
-      <div class="opener-text" id="openerText">
-        <span class="opener-placeholder">Hit generate to craft your opener…</span>
-      </div>
-      <div class="parts-row" id="partsRow" style="display:none;">
-        <span class="part-chip chip-intro" id="chipIntro"></span>
-        <span class="part-chip chip-opener" id="chipOpener"></span>
-        <span class="part-chip chip-followup" id="chipFollowup"></span>
-      </div>
-    </div>
 
     <!-- Controls -->
     <div class="controls">
@@ -589,13 +576,28 @@
       </button>
     </div>
 
+    <!-- Output -->
+    <div class="output-card" id="outputCard">
+      <div class="output-label">Your opener</div>
+      <div class="opener-text" id="openerText">
+        <span class="opener-placeholder">Hit generate to craft your opener…</span>
+      </div>
+      <div class="parts-row" id="partsRow" style="display:none;">
+        <span class="part-chip chip-intro" id="chipIntro"></span>
+        <span class="part-chip chip-opener" id="chipOpener"></span>
+        <span class="part-chip chip-followup" id="chipFollowup"></span>
+      </div>
+    </div>
+
+
+
     <!-- Word Pools -->
     <div class="pools-header">
       <div class="pools-title">Word Pools</div>
       <button class="toggle-pools" id="togglePools" onclick="togglePools()">Hide ↑</button>
     </div>
 
-    <div class="pools-grid" id="poolsGrid">
+    <div class="pools-grid collapsed" id="poolsGrid">
       <!-- Intro Pool -->
       <div class="pool-card">
         <div class="pool-card-header">
@@ -641,8 +643,8 @@
 
   <script>
     // ── Default pools ──
-    const defaultPools = {
-      intro: [
+const defaultPools = {
+    intro: [
         'Hey, ',
         'Excuse me, ',
         'Hi there! ',
@@ -655,21 +657,25 @@
         'Wow, okay — ',
         'Alright, ',
         'So, ',
-        'Right, um — ',
+        'Right, — ',
         'Look, ',
         'Okay, ',
         'Listen, ',
         'Oh my god, ',
         'Wait, ',
         'Sorry to interrupt, but ',
-        'Not to be weird, but ',
         'Random, I know, but ',
         'Totally out of nowhere, but ',
         'I\'ll keep this brief — ',
         'Don\'t mind me, but ',
         'This is a bit spontaneous, but ',
-      ],
-      opener: [
+        'Hey, real quick, ',
+        'Oh hey! ',
+        'Excuse me; ',
+        '[Holding up hand] STOP.. ',
+        'I know this is going to sound weird, but ',    
+    ],
+    opener: [
         'I saw that you were here',
         'I just wanted to introduce myself',
         'I noticed you from across the room',
@@ -682,30 +688,62 @@
         'you look like someone worth knowing',
         'I keep running into you and figured I should say something',
         'I spotted you and lost track of my entire train of thought',
-        'you\'re giving off really great vibes',
-        'I think we\'ve been making eye contact for like five minutes',
+        'you\'re giving off great vibes',
         'I almost didn\'t come over, but something told me to',
         'I\'ve never done this before, but here we are',
         'I was on my way out and then I saw you',
         'you look like you\'re having the most interesting time here',
-        'my friend bet me I wouldn\'t talk to you — they were wrong',
         'I think the universe is nudging me to introduce myself',
         'you look familiar — do I know you from somewhere?',
         'I\'m supposed to be leaving, but I saw you and reconsidered',
         'I noticed you laughing from across the room and it was contagious',
         'you have the most distinctive style here',
-        'I overheard something you said and I completely agree',
-        'you looked like you could use a conversation',
-        'I\'ve been standing here debating this for way too long',
         'I told myself if you were still here in five minutes I\'d come over',
         'I don\'t usually do this kind of thing',
         'you caught my eye and now here I am',
         'something about you is very intriguing',
-        'I\'ve walked past twice and I just had to stop',
         'I was minding my own business and then I saw you',
         'you seem like exactly the kind of person I\'d want to meet',
-      ],
-      followup: [
+        'your outfit is amazing and I need a quick opinion — does this [garment] look good?',
+        'This line is taking forever. How many days have you been standing here?',
+        '[Holding up hand] STOP. I just wanted to introduce myself. I\'m [Name], what\'s your name?',
+        'Wow, what\'s that you\'re eating, it looks amazing. Is it good?',
+        'Hey, real quick, please tell my friend that putting pineapple on a pizza is a crime against nature...',
+        'you caught my eye and I thought I\'d come see if you\'re interesting.',
+        'Who do you think lies more in relationships, men or women? Need an outside opinion.',
+        'My friend doesn\'t believe that every woman on Earth is deeply spiritual. Can you explain that they are.',
+        'On a scale of 1-10, how good is your excuse for why we haven\'t met yet?',
+        'I\'m conducting a very important social experiment. How awkward do you think this is going to get?',
+        'you have good energy. Had to come say hi.',
+        'you have a glowing aura; Do you do some sort of spiritual practice?',
+        'You seem like someone with an exciting life. What\'s the most exciting thing that\'s happened to you this week?',
+        'Okay, serious question: Are you a good person or just really good at pretending?',
+        'I bet I can guess what you do for a living in three tries. Want to test me?',
+        'I need a second opinion. Is this [garment] too much, too little, or just enough?',
+        'you look like you know something I don\'t. What\'s the secret?',
+        'I\'m trying to find the best coffee in the area, but I don\'t trust Google. Who do you recommend?',
+        'I\'m not here often. What\'s the one place you\'d recommend I visit this weekend?',
+        'That\'s an interesting [item/accessory]. Is there a story behind it?',
+        'I\'m asking people what their favourite local food place is. What\'re you saying?',
+        'You seem like you\'re having more fun than everyone else here. What\'s your secret?',
+        'Oh hey! Long time no see. We\'ve never met.',
+        'I\'m looking for a new [book/podcast/show]. Any recommendations that aren\'t boring?',
+        'I\'m debating whether to [action]. As a stranger, what\'s your honest take?',
+        'This music is great. Do you know who\'s playing or what genre this is?',
+        'You seem like you know what you\'re doing. Mind if I ask you a quick question?',
+        'I\'m trying to figure out if [controversial but light topic] is acceptable. Where do you stand?',
+        'You have great taste in [music/fashion/art]. Where do you find stuff like this?',
+        'you look friendly, how\'s your day been?',
+        'do you know the meaning of life? Do you know anyone who does? Oh well, how\'s your day been?',
+        'Are they real shoes? After confusion: There\'s always been people selling fake shoes, but I\'ve heard some shops are selling them now.',
+        'you look like you know what you\'re doing.',
+        'I just wanted to let you know… you are so... unbelievably… in my way, can you move?',
+        'Fancy some AMAZING company?',
+        'I have to go meet someone, but you look super interesting and I AM super interesting. Want to pass me your number and maybe we can hang out sometime?',
+        'I\'ve just been stood up by my date, but I\'m in a good mood and wanting a night out. Mind if I join your party?',
+        'There\'s something you need to know...',
+    ],
+    followup: [
         'I\'m [name] — what\'s yours?',
         'Are you a snob?',
         'Can I buy you a coffee?',
@@ -735,13 +773,17 @@
         'where are you from originally?',
         'I hope that wasn\'t too strange.',
         'you seem like someone who\'s interesting to talk to.',
-        'can I steal two minutes of your time?',
-        'any chance you\'re single?',
-        'I\'ll stop rambling now.',
+        'got 2 minutes?',
         'that\'s my opener — now you go.',
         'so… hi.',
-      ],
-    };
+        'Want to test me?',
+        'What\'s the secret?',
+        'how\'s your day been?',
+        'Mind if I join your party?',
+        '[funny observation about locale.]',
+        'This place always has the best/worst [thing].',
+    ],
+};
 
     let pools = JSON.parse(JSON.stringify(defaultPools)); // deep copy
     let history = [];
