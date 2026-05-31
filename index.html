@@ -545,19 +545,47 @@
       font-size: 12px;
       letter-spacing: 0.04em;
     }
+
+    .btn-action {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 40px 0 20px 0;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-action:hover {
+    border-color: var(--pink);
+    color: var(--pink);
+    background: var(--pink-dim);
+    transform: translateY(-1px);
+}
+
+.btn-action:active {
+    transform: scale(0.98);
+}
   </style>
 </head>
 <body>
   <div class="wrapper">
     <header>
 
-      <h1>IceBreak Openator</h1>
+      <h1>The Openator</h1>
       <p class="subtitle">Generate randomised conversation openers.</p>
     </header>
 
     <!-- Controls -->
     <div class="controls">
-      <button class="btn-generate" id="btnGenerate" onclick="generate()">
+      <button class="btn-generate" id="btnGenerate" onclick="playClickSound(); generate()">
         <svg class="icon" id="diceIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="2" width="20" height="20" rx="4"/>
           <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/>
@@ -639,6 +667,10 @@
     </div>
 
     <footer>made with charm &amp; randomness</footer>
+  
+    <button class="btn-action" onclick="playClickSound(); openExternalLink('https://github.com/kay-who-codes/Play-Game')">
+    Play Game
+  </button>
   </div>
 
   <script>
@@ -739,15 +771,16 @@ const defaultPools = {
         'you look like you know what you\'re doing.',
         'I just wanted to let you know… you are so... unbelievably… in my way, can you move?',
         'Fancy some AMAZING company?',
-        'I have to go meet someone, but you look super interesting and I AM super interesting. Want to pass me your number and maybe we can hang out sometime?',
+        'I have to go meet someone, but...',
         'I\'ve just been stood up by my date, but I\'m in a good mood and wanting a night out. Mind if I join your party?',
         'There\'s something you need to know...',
     ],
     followup: [
         'I\'m [name] — what\'s yours?',
         'Are you a snob?',
-        'Can I buy you a coffee?',
+        'Wanna get coffee?',
         'we should talk more.',
+        'you look super interesting and I AM super interesting. Want to pass me your number and maybe we can chat sometime?',
         'do you come here often?',
         'you have a great energy.',
         'what\'s your story?',
@@ -760,11 +793,9 @@ const defaultPools = {
         'tell me something interesting about yourself.',
         'I\'m glad I came over.',
         'okay, now I\'m nervous — hi.',
-        'please don\'t make this weird.',
-        'am I being too much?',
         'is this seat taken?',
-        'can I get your name at least?',
-        'I promise I\'m normal.',
+        'let me try to guess your name... Shaniqua!',
+        'I promise I\'m normal. Well, probably not actually, but I am sound.',
         'don\'t leave yet.',
         'you look like a good conversationalist.',
         'what do you do when you\'re not being noticed across rooms?',
@@ -938,6 +969,19 @@ const defaultPools = {
         generate();
       }
     });
+
+ // ── External link ──
+function openExternalLink(url) {
+    window.open(url, '_blank');
+}
+
+// ── Click sound effect ──
+const clickAudio = new Audio('App Files/click.mp3');
+
+function playClickSound() {
+    clickAudio.currentTime = 0;
+    clickAudio.play();
+}
 
     // ── Init ──
     renderPool('intro');
